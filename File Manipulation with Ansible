@@ -1,0 +1,40 @@
+Introduction
+A common theme in everyday systems administration is the need to work with system files. It follows that any good configuration management or automation engine must be able to do the same. This exercise challenges students to use Ansible to execute varying tasks on remote systems involving file manipulation.
+
+Solution
+Log in to the Ansible Control Node lab server using the credentials provided:
+
+ssh cloud_user@<PUBLIC_IP_ADDRESS>
+Become the ansible user:
+
+===> su ansible
+NOTE: All commands throughout the lab will be run from the Ansible Control Node lab server.
+
+Download a file to /tmp on each host in qa-servers and verify the sha256 checksum
+Get the checksum value:
+
+====> curl http://software.xyzcorp.com/enigma-checksum.txt
+Copy the checksum value in the output, and paste it into a plaintext file (you'll need it for the next command).
+
+Download a file to /tmp/ on each host in qa-servers, replacing <CHECKSUM_VALUE> with the value you just copied:
+
+====> ansible qa-servers -m get_url -a "url=http://software.xyzcorp.com/enigma.tgz dest=/tmp/enigma.tgz checksum=sha256:<CHECKSUM_VALUE>"
+Extract /tmp/enigma.tgz to /opt/ on all hosts in qa-servers
+Run the command:
+
+=====> ansible qa-servers -b -m unarchive -a "src=/tmp/enigma.tgz dest=/opt/ remote_src=yes"
+Update a line of text on each server in qa-servers
+Update the line of text "DEPLOY_CODE" to "CODE_RED" in /opt/enigma/details.txt on each server in qa-servers:
+
+====> ansible qa-servers -b -m lineinfile -a "regexp=DEPLOY_CODE line=CODE_RED path=/opt/enigma/details.txt"
+Set the group ownership of a directory on each host in qa-servers
+Set the group ownership of the directory /opt/enigma/secret/ and each file contained within the directory so that the group owner is protected for each host in qa-servers:
+
+=====> ansible qa-servers -b -m file -a "recurse=yes state=directory path=/opt/enigma/secret group=protected"
+Delete a file on all servers
+Delete the file /opt/enigma/tmp/deployment-passwords.txt on all servers:
+
+======> ansible all -b -m file -a "state=absent path=/opt/enigma/tmp/deployment-passwords.txt"
+Conclusion
+
+
